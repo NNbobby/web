@@ -1,0 +1,46 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Treagle{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/home.css' %}">
+</head>
+<body>
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <h1>Treagle</h1>
+      <hr>
+    </div>
+    <ul class="sidebar-menu">
+      <li><a href="{% url 'newsadm' %}">Новости</a></li>
+      <li><a href="{% url 'databaseadm' %}">База данных</a></li>
+      <li><a href="{% url 'statisticsadm' %}">Статистика</a></li>
+    </ul>
+    <ul class="sidebar-footer">
+      <li><a href="{% url 'settingsadm' %}">Настройки</a></li>
+    </ul>
+  </div>
+
+  <!-- Top bar -->
+  <div class="top-bar">
+    <div class="exchange-rates">BB p2p: 70 RUB / Sale: 74 RUB</div>
+    <div class="balances">
+      <div class="balance-switcher">ADM</div>
+      <div class="escrow-switcher">IN</div>
+      <div class="deals">PAN</div>
+      <div class="turnover-switcher">EL</div>
+    </div>
+    <a href="{% url 'logout' %}" class="top-bar-button exit-button">Выход</a>
+  </div>
+
+  <!-- Main content -->
+  <div class="main-content">
+    {% block content %}
+    <!-- Здесь будет контент страницы -->
+    {% endblock %}
+  </div>
+</body>
+</html>

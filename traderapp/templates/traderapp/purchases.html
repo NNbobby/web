@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<h2>Заявки</h2>
+<link rel="stylesheet" href="{% static 'css/table.css' %}">
+<!-- Кнопки фильтров -->
+<div class="filter-buttons">
+    <a href="?filter_type=active" class="{% if filter_type == 'active' %}active-filter{% endif %}">Активные</a>
+    <a href="?filter_type=mine" class="{% if filter_type == 'mine' %}active-filter{% endif %}">Мои</a>
+    <a href="?filter_type=completed" class="{% if filter_type == 'completed' %}active-filter{% endif %}">Завершенные</a>
+</div>
+
+<!-- Таблица заявок со стилями -->
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Банк</th>
+            <th>Реквизиты</th>
+            <th>Сумма (RUB)</th>
+            <th>Курс</th>
+            <th>Сумма (USDT)</th>
+            <th>Дата создания</th>
+            <th>Осталось времени</th>
+            <th>Действие</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for bid in bids %}
+        <tr>
+            <td>{{ bid.id }}</td>
+            <td>{{ bid.bank }}</td>
+            <td>
+                {% if bid.status == 'active' %}
+                    {{ bid.account_details|slice:":5" }}*****
+                {% else %}
+                    {{ bid.account_details }}
+                {% endif %}
+            </td>
+            <td>{{ bid.amount_rub }}</td>
+            <td>{{ bid.exchange_rate }}</td>
+            <td>{{ bid.calculate_usdt }}</td>
+            <td>{{ bid.created_at }}</td>
+            <td>
+                {% if bid.status == 'pending' %}
+                    <!-- Таймер с ID заявки и оставшимся временем -->
+                    <div class="remaining-time" 
+                        data-time-left="{{ bid.remaining_time.total_seconds }}" 
+                        data-bid-id="{{ bid.id }}">
+                    </div>
+                {% else %}
+                    ---
+                {% endif %}
+            </td>
+            <td>
+                {% if filter_type == 'active' %}
+                    <!-- Кнопка принятия -->
+                    <form method="POST" action="{% url 'accept_bid' bid.id %}">
+                        {% csrf_token %}
+                        <button class="accept-button" type="submit">Принять</button>
+                    </form>
+                {% elif filter_type == 'mine' %}
+                    <!-- Выпадающий список действий -->
+                    <form method="POST" action="{% url 'accept_bid' bid.id %}">
+                        {% csrf_token %}
+                        <select name="action">
+                            <option value="complete">Успешно</option>
+                            <option value="cancel">Отменить</option>
+                        </select>
+                        <button class="complete-button" type="submit">Выполнить</button>
+                    </form>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<script>
+    document.querySelectorAll('.remaining-time').forEach(function (timer) {
+        let timeLeft = parseInt(timer.dataset.timeLeft); // Оставшееся время в секундах
+        let bidId = timer.getAttribute('data-bid-id');  // ID заявки
+
+        function updateTimer() {
+            if (timeLeft > 0) {
+                let hours = Math.floor(timeLeft / 3600);
+                let minutes = Math.floor((timeLeft % 3600) / 60);
+                let seconds = timeLeft % 60;
+
+                // Форматируем таймер
+                const formatTime = (num) => (num < 10 ? '0' + num : num);
+
+                timer.textContent = `${formatTime(hours)}:${formatTime(minutes)}:${formatTime(seconds)}`;
+                timeLeft--;
+            } else {
+                timer.textContent = "Время вышло!";
+                
+                // Отправить запрос на сервер для автоматической отмены
+                cancelBid(bidId);
+            }
+        }
+
+        function cancelBid(bidId) {
+            fetch(`/trade/cancel_bid/${bidId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}', // Передаем CSRF токен
+                },
+                body: JSON.stringify({ action: 'cancel' }) // Указываем действие
+            })
+            .then(response => {
+                if (response.ok) {
+                    window.location.reload(); // Перезагружаем страницу
+                }
+            })
+            .catch(error => console.error('Ошибка отмены заявки:', error));
+        }
+
+        // Обновляем таймер каждую секунду
+        updateTimer();
+        setInterval(updateTimer, 1000);
+    });
+</script>
+
+
+{% endblock %}

@@ -1,0 +1,41 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authorization Page</title>
+    <link rel="stylesheet" href="{% static 'css/auth.css' %}">
+</head>
+
+<body>
+    <div class="background"></div>
+    <div class="login-container">
+        <h2>Авторизация</h2>
+
+        <!-- Добавляем блок для отображения сообщений -->
+
+
+        <!-- Форма авторизации -->
+        <form method="POST" class="input-button-container">
+            {% csrf_token %}
+            <div class="input-container">
+                <input type="text" id="auth-key" name="auth_key" placeholder="Введите ваш ключ" required>
+                <i class="fas fa-key"></i>
+            </div>
+            <button type="submit" class="login-button">Войти</button>
+        </form>
+        {% if messages %}
+        <div class="messages-container">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</body>
+
+</html>

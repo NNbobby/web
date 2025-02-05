@@ -1,0 +1,78 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Treagle{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/home.css' %}">
+</head>
+<body>
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <h1>Treagle</h1>
+      <hr>
+    </div>
+    <ul class="sidebar-menu">
+      <li><a href="{% url 'news' %}">Новости</a></li>
+      <li><a href="{% url 'purchases' %}">Покупка</a></li>
+      <li><a href="{% url 'sales' %}">Продажа</a></li>
+      <li><a href="{% url 'deposit' %}">Депозит</a></li>
+      <li><a href="{% url 'wallets' %}">Кошельки</a></li>
+      <li><a href="{% url 'referrals' %}">Рефералы</a></li>
+      <li><a href="{% url 'statistics' %}">Статистика</a></li>
+      <li><a href="{% url 'api' %}">API</a></li>
+    </ul>
+    <ul class="sidebar-footer">
+      <li><a href="{% url 'settings' %}">Настройки</a></li>
+      <li><a href="{% url 'faq' %}">FAQ</a></li>
+    </ul>
+  </div>
+
+<!-- Top bar -->
+<div class="top-bar">
+  <div class="exchange-rates">
+    BB p2p: {{ exchange_rate.p2p_rate|default:'--'|floatformat:2 }} RUB /
+    Sale: {{ exchange_rate.sale_rate|default:'--'|floatformat:2 }} RUB
+  </div>
+
+  <div class="balances">
+    <div class="balance-switcher">Баланс: {{ user_balance|floatformat:2 }} ₽</div>
+    <div class="escrow-switcher">Эскроу: {{ user_escrow|floatformat:2 }} ₽</div>
+    <div class="deals">Сделок: {{ user_deals_count }}</div>
+    <div class="turnover-switcher">Оборот: {{ user_turnover|floatformat:2 }} ₽</div>
+  </div>
+  <a href="{% url 'logout' %}" class="top-bar-button exit-button">Выход</a>
+</div>
+
+
+  <!-- Main content -->
+  <div class="main-content">
+    {% block content %}
+    <!-- Здесь будет контент страницы -->
+    {% endblock %}
+  </div>
+  
+  <script>
+    function updateExchangeRates() {
+        fetch("{% url 'fetch_exchange_rate' %}")
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.querySelector('.exchange-rates').innerHTML = 
+                        `BB p2p: ${data.p2p_rate.toFixed(2)} RUB / Sale: ${data.sale_rate.toFixed(2)} RUB`;
+                }
+            })
+            .catch(err => console.error("Ошибка при обновлении курса:", err));
+    }
+
+    // Обновляем курсы каждые 5 минут
+    setInterval(updateExchangeRates, 5 * 60 * 1000);
+
+    // Загрузка курсов при загрузке страницы
+    updateExchangeRates();
+  </script>
+
+</body>
+</html>

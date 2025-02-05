@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block title %}Новости - Treagle{% endblock %}
+
+{% block content %}
+<div class="news-feed">
+  <div class="news-item">
+    <div class="news-date">01.09.2024</div>
+    <div class="news-content">
+      <p>Краткое содержание новости. <a href="#">Читать далее</a></p>
+      <div class="news-full-content" style="display: none;">
+        Полное содержание новости. Здесь описаны все детали и нюансы.
+      </div>
+    </div>
+  </div>
+  <div class="news-item">
+    <div class="news-date">02.09.2024</div>
+    <div class="news-content">
+      <p>Краткое содержание новости. <a href="#">Читать далее</a></p>
+      <div class="news-full-content" style="display: none;">
+        Полное содержание новости. Здесь описаны все детали и нюансы.
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

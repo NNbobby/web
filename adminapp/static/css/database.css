@@ -1,0 +1,96 @@
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #292929;
+        }
+        th {
+            background-color: #4e4e4e;
+        }
+        tr:nth-child(even) {
+            background-color: #747474;
+        }
+        tr:hover {
+            background-color: #555555;
+        }
+        /* Скрытый чекбокс */
+        .hidden-checkbox {
+            display: none;
+        }
+
+        /* Модальное окно (Overlay) */
+        .modal { /* Это необходимо для начального скрытия окна */
+            position: fixed; /* Фиксированная позиция относительно окна браузера */
+            top: 50%; /* Вертикальный центр */
+            left: 50%; /* Горизонтальный центр */
+            transform: translate(-50%, -50%); /* Смещаем обратно на половину ширины и высоты */
+            width: 100%; /* Чтобы фон overlay занимал всю ширину */
+            height: 100%; /* Чтобы фон overlay занимал всю высоту */
+            background-color: rgba(0, 0, 0, 0.5); /* Затемнённый фон */
+            justify-content: center; /* Центровка контента по горизонтали */
+            align-items: center; /* Центровка контента по вертикали */
+            z-index: 1000; /* Поверх остальных элементов */
+        }
+        
+
+        /* Когда чекбокс активен, показываем модальное окно */
+        .hidden-checkbox:checked ~ .modal {
+            display: flex;
+        }
+
+        .modal-content {
+            left: 750px;
+            top: 300px;
+            background: #0a0a0a; /* Цвет фона */
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 500px;
+            width: 90%; /* Чтобы окно не выходило за экран на мобильных устройствах */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Тень для красоты */
+            position: relative; /* Для размещения кнопки закрытия */
+            text-align: center;
+        }
+        
+
+        .hidden {
+        display: none;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #333;
+        }
+
+        .modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .action-button {
+            position: relative; /* Сбрасываем абсолютное или фиксированное позиционирование */
+            padding: 10px 20px;
+            top: 5px; /* Установит точное расстояние сверху */
+            background-color: #353e3f;
+            color: rgb(249, 255, 255);
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        .action-button:hover {
+            background-color: #697c7e;
+        }
+

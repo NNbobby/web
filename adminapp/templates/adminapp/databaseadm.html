@@ -1,0 +1,138 @@
+{% extends 'baseadmin.html' %}
+
+{% block title %}ADM panel - Treagle{% endblock %}
+
+{% block content %}
+
+{% load static %}
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="{% static 'css/database.css' %}">
+<title>Админская панель</title>
+<script src="{% static 'js/admin-actions.js' %}"></script>
+<h1>Добро пожаловать в админскую панель</h1>
+<p>Здесь вы можете управлять базой данных.</p>
+
+<hr>
+
+<!-- Таблица пользователей -->
+<!-- Кнопка для открытия-->
+<button data-modal="user-modal" class="action-button">Добавить пользователя</button>
+
+<!-- Модальное окно "Добавить Пользователя" -->
+<div id="user-modal" class="modal hidden">
+    <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <h2>Добавить пользователя</h2>
+        <form method="post" action="{% url 'add_user' %}">
+            {% csrf_token %}
+            <label for="username">Имя пользователя:</label><br>
+            <input type="text" id="username" name="username" required><br><br>
+            <label for="role">Роль:</label><br>
+            <select id="role" name="role" required>
+                <option value="admin">Админ</option>
+                <option value="trader">Трейдер</option>
+            </select><br><br>
+            <label for="added_by">Добавлен пользователем (ID):</label><br>
+            <input type="number" id="added_by" name="added_by" required><br><br>
+            <button type="submit">Добавить</button>
+        </form>
+    </div>
+</div>
+
+
+<h2>Список пользователей</h2>
+<table border="1" cellspacing="0" cellpadding="5">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Имя</th>
+            <th>Роль</th>
+            <th>Ключ</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for user in users %}
+        <tr>
+            <td>{{ user.id }}</td>
+            <td>{{ user.username }}</td>
+            <td>{{ user.role }}</td>
+            <td>{{ user.token }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<hr>
+
+<!-- Кнопка для открытия -->
+<button data-modal="bid-modal" class="action-button">Добавить заявку</button>
+
+<!-- Модальное окно "Добавить Заявку" -->
+<div id="bid-modal" class="modal hidden">
+    <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <h2>Добавить заявку</h2>
+        <form method="post" action="{% url 'add_bid' %}">
+            {% csrf_token %}
+            <label for="user">Пользователь (по умолчанию "Не выбрано"):</label><br>
+            <select id="user" name="user_id">
+                <option value="" selected>Не выбрано</option>
+                {% for user in users %}
+                <option value="{{ user.id }}">{{ user.username }}</option>
+                {% endfor %}
+            </select><br><br>
+            <label for="bank">Банк:</label><br>
+            <input type="text" id="bank" name="bank" required><br><br>
+            <label for="amount_rub">Сумма (RUB):</label><br>
+            <input type="number" step="0.01" id="amount_rub" name="amount_rub" required><br><br>
+            <label for="exchange_rate">Курс обмена (RUB -> USDT):</label><br>
+            <input type="number" step="0.0001" id="exchange_rate" name="exchange_rate" required><br><br>
+            <label for="account_details">Реквизиты:</label><br>
+            <input type="text" id="account_details" name="account_details" required><br><br>
+            <label for="extra_fee">
+                <input type="checkbox" id="extra_fee" name="extra_fee"> Добавить надбавку
+            </label><br><br>
+            <button type="submit">Добавить заявку</button>
+        </form>
+    </div>
+</div>
+
+
+
+<!-- Таблица заявок -->
+<h2>Список заявок</h2>
+<table border="1" cellspacing="0" cellpadding="5">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Пользователь</th>
+            <th>Тип заявки</th>
+            <th>Сумма</th>
+            <th>Статус</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for bid in bids %}
+        <tr>
+            <td>{{ bid.id }}</td>
+            <td>{{ bid.user.username }}</td>
+            <td>{{ bid.type }}</td>
+            <td>{{ bid.amount }}</td>
+            <td>{{ bid.status }}</td>
+            <td>
+                <form method="post" action="{% url 'delete_bid' bid.id %}">
+                    {% csrf_token %}
+                    <button type="submit">Удалить</button>
+                </form>
+            </td> <!-- Добавляем кнопку здесь -->
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+
+
+
+
+{% endblock %}
