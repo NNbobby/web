@@ -1,7 +1,7 @@
 from django.db import models
 import uuid
 from django.utils.timezone import now
-
+from django.utils import timezone
 from django.db import models
 import uuid
 
@@ -78,7 +78,8 @@ class Bid(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)  # Дата и время создания заявки
     accepted_at = models.DateTimeField(null=True, blank=True)  # Дата принятия заявки, NoneНу 
     account_details = models.CharField(max_length=255)  # Реквизиты
-    extra_fee = models.BooleanField(default=False)  # Надбавка (true/false)
+    extra_fee = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # Пример
+    extra_fee_usdt = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, verbose_name="Надбавка в USDT")  # Надбавка в USDT
 
     class Meta:
         db_table = 'bids'  # Имя таблицы в базе данных
@@ -88,11 +89,15 @@ class Bid(models.Model):
 
     def calculate_usdt(self):
         """
-        Рассчитывает сумму в USDT на основе курса и добавляет надбавку, если указан `extra_fee`.
+        Рассчитывает сумму в USDT на основе курса и добавляет надбавку в рублях, если указана `extra_fee_usdt`.
         """
         usdt = self.amount_rub / self.exchange_rate
-        if self.extra_fee:
-            usdt += 5  # Например, если есть надбавка, добавляем фиксированную сумму
+
+        # Рассчитываем рублевую эквивалентность надбавки
+        if self.extra_fee_usdt > 0:
+            rub_fee = self.extra_fee_usdt * self.exchange_rate  # Конвертируем надбавку из USDT в рубли
+            usdt += rub_fee / self.exchange_rate  # Добавляем к USDT
+
         return round(usdt, 2)
 
 
@@ -109,6 +114,14 @@ class ExchangeRate(models.Model):
 
 
 class Wallet(models.Model):
+    BANK_CHOICES = [
+        ('tinkoff', 'Тинькофф'),
+        ('sber', 'Сбербанк'),
+        ('mts', 'МТС Банк'),
+        ('gazprombank', 'Газпромбанк'),  # Новый банк
+        ('vtb', 'ВТБ'),                   # Новый банк
+        ('akbars', 'Ак Барс'),            # Новый банк
+    ]
     user = models.ForeignKey('authapp.User', on_delete=models.CASCADE, verbose_name="Пользователь", related_name="wallets")
     card_number = models.CharField(max_length=16, unique=True, verbose_name="Номер карты")
     phone_number = models.CharField(max_length=15, null=True, blank=True, verbose_name="Номер телефона")
@@ -124,11 +137,14 @@ class Wallet(models.Model):
     auto_disable_on_limit = models.BooleanField(default=False, verbose_name="Автоотключение при превышении лимита")
     notify_on_disable = models.BooleanField(default=False, verbose_name="Уведомление об отключении")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата добавления")
+    bank = models.CharField(max_length=20, choices=BANK_CHOICES, default='tinkoff')
 
     class Meta:
         verbose_name = "Кошелек"
         verbose_name_plural = "Кошельки"
-
+    def toggle_enabled(self):
+        self.is_enabled = not self.is_enabled
+        self.save()
     def __str__(self):
         return f"{self.card_number} ({self.user.username or self.user.tele_id})"
 
@@ -137,3 +153,40 @@ class Wallet(models.Model):
 
     def formatted_amount_limit(self):
         return f"{self.current_amount}/{self.limit_amount_per_day}"
+
+class DepositRequest(models.Model):
+    STATUS_CHOICES = [
+        ('active', 'Активная'),
+        ('completed', 'Завершенная'),
+        ('canceled', 'Отмененная'),
+        ('expired', 'Просроченная'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)  # сумма в RUB
+    wallet_address = models.ForeignKey('DepWallet', on_delete=models.CASCADE)  # Ссылаемся на DepWallet для адреса
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
+    created_at = models.DateTimeField(auto_now_add=True)  # дата создания заявки
+    updated_at = models.DateTimeField(auto_now=True)
+    expiration_date = models.DateTimeField(null=True, blank=True)  # Новый столбец
+
+    class Meta:
+        db_table = 'deposit_requests'
+
+    def save(self, *args, **kwargs):
+        # Устанавливаем expiration_date на 15 минут позже, если это новая запись
+        if not self.id:
+            self.expiration_date = timezone.now() + timezone.timedelta(minutes=3)
+        super().save(*args, **kwargs)
+
+
+    def __str__(self):
+        return f"Заявка {self.id} на сумму {self.amount} RUB"
+
+class DepWallet(models.Model):
+    id = models.AutoField(primary_key=True)
+    wallet_address = models.CharField(max_length=255, unique=True)  # Исправлено имя поля
+    is_enabled = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.wallet_address  # Подправьте на правильное название поля

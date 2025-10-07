@@ -9,4 +9,5 @@ urlpatterns = [
     path('adm-db/', views.databaseadm, name='databaseadm'),
     path('add_bid/', views.add_bid, name='add_bid'),
     path('delete_bid/<int:bid_id>/', views.delete_bid, name='delete_bid'),
+    path('add_wallet/', views.add_wallet, name='add_wallet'),
 ]

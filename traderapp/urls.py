@@ -16,5 +16,10 @@ urlpatterns = [
     path('accept_bid/<int:bid_id>/', views.accept_bid, name='accept_bid'),
     path('api/update_rate/', views.fetch_and_sync_exchange_rate, name='fetch_exchange_rate'),
     path('wallets/api/', views.api_wallets, name='api_wallets'),
-    path('wallets/add/', views.add_wallet, name='add_wallet'),
+    path('wallets-add/', views.add_wallet, name='add_wallet'),
+    path('wallets-update-status/<int:wallet_id>/', views.update_wallet_status, name='update_wallet_status'),
+    path('wallets-get/<int:wallet_id>/', views.get_wallet, name='get_wallet'),  # Новый маршрут
+    path('wallets-delete/<int:wallet_id>/', views.delete_wallet, name='delete_wallet'),
+    path('api/deposit/', views.create_deposit_request, name='api_create_deposit_request'),
+    path('api/deposit/<int:requestId>/cancel/', views.cancel_deposit_request, name='api_cancel_deposit_request'),
 ]

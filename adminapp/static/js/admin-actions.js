@@ -33,3 +33,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 });
+
+function toggleExtraFeeInput() {
+    const extraFeeCheckbox = document.getElementById('extra_fee');
+    const extraFeeInputContainer = document.getElementById('extra_fee_amount_container');
+    
+    if (extraFeeCheckbox.checked) {
+        extraFeeInputContainer.style.display = 'block'; // Показываем поле
+    } else {
+        extraFeeInputContainer.style.display = 'none'; // Скрываем поле
+    }
+}

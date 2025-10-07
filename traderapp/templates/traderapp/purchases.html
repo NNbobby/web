@@ -18,6 +18,7 @@
             <th>Банк</th>
             <th>Реквизиты</th>
             <th>Сумма (RUB)</th>
+            <th>Надбавка (USDT)</th>
             <th>Курс</th>
             <th>Сумма (USDT)</th>
             <th>Дата создания</th>
@@ -38,6 +39,7 @@
                 {% endif %}
             </td>
             <td>{{ bid.amount_rub }}</td>
+            <td>{{ bid.extra_fee_usdt }}</td>
             <td>{{ bid.exchange_rate }}</td>
             <td>{{ bid.calculate_usdt }}</td>
             <td>{{ bid.created_at }}</td>
@@ -54,29 +56,82 @@
             </td>
             <td>
                 {% if filter_type == 'active' %}
-                    <!-- Кнопка принятия -->
-                    <form method="POST" action="{% url 'accept_bid' bid.id %}">
-                        {% csrf_token %}
-                        <button class="accept-button" type="submit">Принять</button>
-                    </form>
+                    <!-- Кнопка принятия с использованием AJAX -->
+                    <button class="accept-button" data-bid-id="{{ bid.id }}">Принять</button>
                 {% elif filter_type == 'mine' %}
                     <!-- Выпадающий список действий -->
-                    <form method="POST" action="{% url 'accept_bid' bid.id %}">
+                    <form class="bid-action-form" data-bid-id="{{ bid.id }}">
                         {% csrf_token %}
-                        <select name="action">
-                            <option value="complete">Успешно</option>
+                        <select name="action" required>
+                            <option value="" disabled selected>Выберите действие</option>
+                            <option value="complete">Завершить</option>
                             <option value="cancel">Отменить</option>
                         </select>
-                        <button class="complete-button" type="submit">Выполнить</button>
-                    </form>
+                        <button type="submit" class="complete-button">Выполнить</button>
+                    </form>                    
                 {% endif %}
-            </td>
+            </td>            
         </tr>
         {% endfor %}
     </tbody>
 </table>
 
 <script>
+    document.querySelectorAll('.bid-action-form').forEach(form => {
+    form.addEventListener('submit', function(event) {
+        event.preventDefault(); // Предотвращаем стандартное действие формы
+
+        const bidId = this.getAttribute('data-bid-id');
+        const action = this.querySelector('select[name="action"]').value;
+
+        fetch(`/trade/accept_bid/${bidId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': '{{ csrf_token }}', // Передаем CSRF токен
+            },
+            body: new URLSearchParams({
+                'action': action,
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message); // Уведомление об успехе
+                window.location.reload(); // Перезагрузка страницы
+            } else {
+                alert('Ошибка: ' + data.message); // Уведомление об ошибке
+            }
+        })
+        .catch(error => console.error('Ошибка:', error));
+    });
+    });
+
+    document.querySelectorAll('.accept-button').forEach(button => {
+        button.addEventListener('click', function(event) {
+            event.preventDefault(); // Предотвратить формирование стандартного действия
+
+            const bidId = this.getAttribute('data-bid-id');
+
+            fetch(`/trade/accept_bid/${bidId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}', // Убедитесь, что передаете CSRF токен
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message); // Показываю сообщение об успехе
+                    window.location.reload(); // Перезагрузка страницы с заявками
+                } else {
+                    alert('Ошибка: ' + data.message); // Показ ошибки, если есть
+                }
+            })
+            .catch(error => console.error('Ошибка:', error));
+        });
+    });
     document.querySelectorAll('.remaining-time').forEach(function (timer) {
         let timeLeft = parseInt(timer.dataset.timeLeft); // Оставшееся время в секундах
         let bidId = timer.getAttribute('data-bid-id');  // ID заявки

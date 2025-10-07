@@ -2,9 +2,9 @@ import os
 import dj_database_url
 from pathlib import Path
 from dotenv import load_dotenv
+from celery.schedules import crontab
 
 from django.contrib.messages import constants as message_constants
-
 MESSAGE_TAGS = {
     message_constants.DEBUG: 'debug',
     message_constants.INFO: 'info',
@@ -96,6 +96,13 @@ CELERY_BROKER_URL = 'redis://localhost:6379/0'  # Адрес брокера (Red
 CELERY_ACCEPT_CONTENT = ['json']              # Формат сообщений
 CELERY_TASK_SERIALIZER = 'json'               # Тип сериализации
 CELERY_TIMEZONE = 'UTC'                       # Таймзона для задач
+
+CELERY_BEAT_SCHEDULE = {
+    'expire_deposit_requests_task': {
+        'task': 'traderapp.tasks.expire_deposit_requests',
+        'schedule': crontab(minute='*/1'),  # Запуск каждые 1 минуту
+    },
+}
 
 
 LANGUAGE_CODE = 'ru-RU'

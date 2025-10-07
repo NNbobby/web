@@ -4,5 +4,337 @@
 
 {% block content %}
 <h2>Страница Депозита</h2>
-<p>Содержимое данной страницы о депозите.</p>
+
+<!-- Кнопка для открытия модального окна -->
+<button id="open-modal" onclick="document.getElementById('deposit-modal').style.display='block'">Пополнить</button>
+
+<!-- Модальное окно для ввода суммы -->
+<div id="deposit-modal" style="display:none;">
+    <div>
+        <span onclick="document.getElementById('deposit-modal').style.display='none'" style="cursor:pointer;">&times;</span>
+        <h3>Введите сумму для пополнения</h3>
+        <input type="number" id="amount" placeholder="Сумма в USDT" required>
+        <button id="create-request" onclick="createDepositRequest()">Создать заявку</button>
+    </div>
+</div>
+
+<div id="deposit-requests">
+    <h3>Созданные заявки</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Адрес кошелька</th>
+                <th>Сумма</th>
+                <th>Статус</th>
+                <th>Дата создания</th>
+                <th>Операция</th>
+            </tr>
+        </thead>
+        <tbody id="request-list">
+            {% for deposit in deposit_requests %}
+            <tr>
+                <td>{{ deposit.id }}</td>
+                <td onclick="copyToClipboard('{{ deposit.wallet_address.wallet_address }}')">
+                    {{ deposit.wallet_address.wallet_address }}
+                </td>
+                <td>{{ deposit.amount }}</td>
+                <td>
+                    {% if deposit.status == 'active' %}
+                        <span style="color: yellowgreen;">Активна. </span>
+                        <span 
+                            id="timer-{{ deposit.id }}"
+                            class="timer"
+                            data-time-left="{{ deposit.remaining_time|default:"0" }}">
+                            Загрузка...
+                        </span>
+                    {% elif deposit.status == 'expired' %}
+                        <span style="color: red;">Просрочена.</span>
+                    {% elif deposit.status == 'canceled' %}
+                        <span style="color: orange;">Отменена</span>
+                    {% else %}
+                        {{ deposit.status }}
+                    {% endif %}
+                </td>
+                <td>{{ deposit.expiration_date|date:"d.m.Y H:i" }}</td>
+                <td>
+                    {% if deposit.status == 'active' %}
+                        <button onclick="cancelRequest({{ deposit.id }})">Отменить</button>
+                    {% else %}
+                        <span style="color: grey;">Действия недоступны</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>        
+    </table>
+</div>
+
+<style>
+    /* Стили остаются без изменений */
+    body {
+        background-color: #f4f4f4;
+    }
+
+    body.dark-theme h2 {
+        color: #ffffff;
+    }
+
+    body.dark-theme h3 {
+        color: #ffffff;
+    }
+
+    body.light-theme h2 {
+        color: #000000;
+    }
+
+    body.light-theme h3 {
+        color: #000000;
+    }
+
+    #open-modal {
+        padding: 10px 20px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.3s;
+    }
+
+    #open-modal:hover {
+        background-color: #419745;
+    }
+
+    #deposit-modal {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 2000;
+        display: none;
+        transition: opacity 0.3s ease;
+    }
+
+    body.dark-theme #deposit-modal > div {
+        background-color: #3b3b3b;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        width: 300px;
+        text-align: center;
+    }
+
+    body.light-theme #deposit-modal > div {
+        background-color: #b8b2b2;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        width: 300px;
+        text-align: center;
+    }
+
+    body.dark-theme #deposit-modal span {
+        font-size: 28px;
+        color: #aaa;
+        float: right;
+        cursor: pointer;
+    }
+
+    body.light-theme #deposit-modal span {
+        font-size: 28px;
+        color: #111111;
+        float: right;
+        cursor: pointer;
+    }
+
+    body.dark-theme #deposit-modal h3, #deposit-requests h3 {
+        margin-top: 0;
+        color: #ffffff;
+    }
+
+    body.light-theme #deposit-modal h3, #deposit-requests h3 {
+        margin-top: 0;
+        color: #000000;
+    }
+
+    #amount {
+        width: calc(100% - 20px);
+        padding: 10px;
+        margin: 10px 0;
+        border: 1px solid #ffffff;
+        border-radius: 5px;
+    }
+
+    #create-request {
+        width: 100%;
+        padding: 10px;
+        background-color: #2196F3;
+        color: rgb(255, 255, 255);
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.3s;
+    }
+
+    #create-request:hover {
+        background-color: #1976D2;
+    }
+
+    body.dark-theme #deposit-requests {
+        margin-top: 20px;
+        background-color: rgb(24, 24, 24);
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);  
+    }
+
+    body.light-theme #deposit-requests {
+        margin-top: 20px;
+        background-color: #b8b8b8;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    body.light-theme #deposit-modal h3, #deposit-requests h3 {
+    margin-top: 0;
+    color: #ffffff;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th, td {
+        padding: 10px;
+        text-align: left;
+        border-bottom: 1px solid #464646;
+    }
+
+    body.dark-theme th {
+        background-color: #1f1f1f;
+        color: #ffffff;
+    }
+
+    body.light-theme th {
+        background-color: #adadad;
+        color: #000000;
+    }
+
+    body.dark-theme tr { 
+        color: #ffffff;
+    }
+
+    body.light-theme tr { 
+        color: #000000;
+    }
+
+    tr:hover {
+        background-color: #747474;
+    }
+
+
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Выбираем все таймеры на странице
+        document.querySelectorAll('.timer').forEach(function (timer) {
+            // Получаем оставшееся время в секундах
+            let timeLeft = parseInt(timer.dataset.timeLeft);
+
+            // Обновляет текст таймера
+            function updateTimer() {
+                if (timeLeft > 0) {
+                    // Вычисляем часы, минуты и секунды
+                    let hours = Math.floor(timeLeft / 3600);
+                    let minutes = Math.floor((timeLeft % 3600) / 60);
+                    let seconds = timeLeft % 60;
+
+                    // Форматируем отображение времени
+                    const formatTime = (num) => (num < 10 ? '0' + num : num);
+                    timer.textContent = `${formatTime(hours)}:${formatTime(minutes)}:${formatTime(seconds)}`;
+                    timeLeft--; // Уменьшаем оставшееся время
+                } else {
+                    // Если время истекло, показываем "Просрочена!"
+                    timer.textContent = 'Просрочена!';
+                    timer.style.color = 'red';
+                }
+            }
+
+            // Инициализируем таймер сразу при загрузке
+            updateTimer();
+
+            // Обновляем таймер каждую секунду
+            setInterval(updateTimer, 1000);
+        });
+    });
+
+
+
+
+
+    document.getElementById('open-modal').onclick = function() {
+        const modal = document.getElementById('deposit-modal');
+        modal.style.display = 'flex';
+        modal.style.opacity = '1';
+    };
+
+    let timeOffset = 0; // Глобальная переменная для хранения разницы времени клиента и сервера
+
+    // Создание новой заявки
+    function createDepositRequest() {
+        const amount = document.getElementById('amount').value;
+        fetch('/trade/api/deposit/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+            body: JSON.stringify({ amount: amount })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                location.reload(); // Перезагрузка страницы
+            } else {
+                alert(data.message);
+            }
+        });
+    }
+
+    function cancelRequest(requestId) {
+        fetch(`/trade/api/deposit/${requestId}/cancel/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                location.reload();
+            } else {
+                alert(data.message);
+            }
+        });
+    }
+
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(() => {
+            alert('Адрес кошелька скопирован!');
+        });
+    }
+</script>
 {% endblock %}

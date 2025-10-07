@@ -18,23 +18,24 @@
       <li><a href="{% url 'newsadm' %}">Новости</a></li>
       <li><a href="{% url 'databaseadm' %}">База данных</a></li>
       <li><a href="{% url 'statisticsadm' %}">Статистика</a></li>
-    </ul>
-    <ul class="sidebar-footer">
       <li><a href="{% url 'settingsadm' %}">Настройки</a></li>
     </ul>
-  </div>
-
-  <!-- Top bar -->
-  <div class="top-bar">
-    <div class="exchange-rates">BB p2p: 70 RUB / Sale: 74 RUB</div>
-    <div class="balances">
-      <div class="balance-switcher">ADM</div>
-      <div class="escrow-switcher">IN</div>
-      <div class="deals">PAN</div>
-      <div class="turnover-switcher">EL</div>
+    <ul class="sidebar-footer">
+      <div class="balances-sidebar">
+        <div class="balance-item">TREAGLE</div>
+        <div class="turnover-item">ADMIN</div>
+        <div class="deals">PANEL</div>
+        <div class="exchange-rates">
+          BB p2p: {{ exchange_rate.p2p_rate|default:'--'|floatformat:2 }} RUB 
+          Sale: {{ exchange_rate.sale_rate|default:'--'|floatformat:2 }} RUB
+        </div>
+        <button onclick="location.href='{% url 'logout' %}'" class="top-bar-button exit-button">Выход</button>
+      </div>
+      
+      <ul class="sidebar-footer">
+        <!-- Этот блок можно оставить пустым, так как все ссылки перемещены выше -->
+      </ul>
     </div>
-    <a href="{% url 'logout' %}" class="top-bar-button exit-button">Выход</a>
-  </div>
 
   <!-- Main content -->
   <div class="main-content">

@@ -1,11 +1,27 @@
+
+
 /* Общие стили для всей страницы */
+
+/* styles.css */
+
+/* Темная тема */
+
+@font-face {
+    font-family: 'widock'; /* Название вашего шрифта */
+    src: url('/static/fonts/Widock_TRIAL_Bold.otf') format('opentype'); /* Путь к файлу шрифта */
+    font-weight: normal; /* Задайте вес шрифта, если нужно */
+    font-style: normal; /* Укажите стиль шрифта, если нужно */
+}
+
+
 body, html {
     margin: 0;
     padding: 0;
     width: 100%;
     height: 100%;
-    font-family: 'Arial', sans-serif;
-    background-color: #000; /* Фоновый цвет */
+    font-family: 'widock'; /* Укажите свой шрифт */
+    font-size: 20px;
+    background-color: #0a0a0a; /* Фоновый цвет */
     color: white;
     overflow-x: auto; /* Устранение горизонтального скроллинга */
 }
@@ -15,17 +31,19 @@ body, html {
 }
 
 /* Левая боковая панель (Sidebar) */
-.sidebar {
+body.dark-theme .sidebar {
     position: fixed;
     top: 0;
     left: 0;
     width: 180px; /* Уменьшили ширину */
     height: 100%;
-    background-color: #0a0a0a;
     color: #fff;
     overflow-y: auto;
+    background-color: #0a0a0a;
     border-right: 2px solid #333; /* Уменьшили яркость границы */
     z-index: 1000; /* Повыше основного контента */
+    display: flex; /* Добавлено для flexbox */
+    flex-direction: column; /* Вертикальное расположение элементов */
 }
 
 .sidebar-header {
@@ -40,29 +58,45 @@ body, html {
 }
 
 .sidebar-menu, .sidebar-footer {
+    font-size: 20px;
     list-style: none;
     margin: 0;
     padding: 0;
 }
 
+/* Обновленное меню */
 .sidebar-menu li, .sidebar-footer li {
-    padding: 15px 15px; /* Уменьшили отступы */
-    text-align: left;
-    white-space: nowrap;
-    text-overflow: ellipsis; /* Троеточие, если текст слишком длинный */
-    overflow: hidden;
-    border-bottom: 1px solid #333;
+    padding: 0; /* Убрали отступы между элементами */
 }
 
-.sidebar-menu li a, .sidebar-footer li a {
+body.dark-theme .sidebar-menu a, .sidebar-footer a {
     color: #FFF;
     text-decoration: none;
     cursor: pointer;
     display: block;
-    font-size: 16px; /* Уменьшили размер шрифта */
+    padding: 10px 15px; /* Внутренние отступы */
+    font-size: 20px; /* Уменьшили размер шрифта */
+    transition: background-color 0.3s, box-shadow 0.3s, transform 0.2s; /* Плавный переход */
+    border-radius: 4px; /* Скругленные углы */
 }
 
-.sidebar-menu li.active {
+/* Эффекты при наведении и анимация кнопок */
+body.dark-theme .sidebar-menu a:hover, .sidebar-footer a:hover {
+    background-color: rgba(128, 128, 128, 0.2); /* Светлый фон при наведении */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Тень при наведении */
+    animation: bounce 0.3s; /* Анимация при наведении */
+}
+
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-5px);
+    }
+}
+
+body.dark-theme .sidebar-menu li.active {
     background-color: #1a1a1a;
 }
 
@@ -72,73 +106,53 @@ body, html {
     width: 100%;
 }
 
-.top-bar {
-    position: fixed;
-    top: 0;
-    left: 180px; /* Отступ от Sidebar */
-    width: calc(100vw - 180px); /* Учитываем ширину боковой панели */
-    height: 60px;
-    background-color: #1d1d1d;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 20px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Тень */
-    box-sizing: border-box; /* Глобальное правило */
-    z-index: 1001;
-    overflow: hidden; /* Скрываем возможное переполнение */
+
+/* Балансы в левой панели */
+body.dark-theme .balances-sidebar {
+    padding: 10px 15px; /* Отступы внутри блока */
+    background-color: #1d1d1d; /* Цвет фона блока */
+    border-top: 1px solid #333; /* Отделение от других элементов */
+    border-radius: 4px; /* Скругленные углы */
+    margin-top: auto; /* Автоматический отступ сверху заставляет элемент двигаться вниз */
+}
+
+.balances-sidebar .balance-item,
+.balances-sidebar .turnover-item,
+.balances-sidebar .deals,
+.balances-sidebar .exchange-rates {
+    font-size: 83%; /* Увеличиваем размер шрифта */
+    font-weight: bold; /* Делаем текст жирным */
+    margin-bottom: 5px; /* Отступ между элементами */
+    text-align: center; /* Центрируем текст */
 }
 
 
-/* Балансы в верхней панели */
-.balances {
-    display: flex;
-    flex-wrap: wrap; /* Элементы переносятся */
-    gap: 20px; /* Расстояние между элементами */
-    margin-right: 10px;
-    justify-content: center; /* Центрируем на узких экранах */
+body.dark-theme .balance-item-container {
+    border: 1px solid #ccc; /* Цвет рамки */
+    border-radius: 4px; /* Скругление углов */
+    padding: 10px; /* Внутренние отступы */
+    margin-bottom: 10px; /* Отступ между элементами */
+    background-color: #1d1d1d; /* Цвет фона блока */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Тень для блока */
 }
 
-.balances div {
-    background-color: #2e2e2e;
-    color: white;
-    padding: 5px 10px;
-    border-radius: 8px;
-    font-size: 25px;
-    text-align: center;
-    flex: 1; /* Гибкость */
-    max-width: 300px; /* Максимальная ширина */
-    min-width: 300px; /* Минимальная ширина */
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis; /* Троеточие */
-}
 
+/* Адаптивные стили для различных размеров экранов */
 @media screen and (max-width: 768px) {
-    .balances div {
-        font-size: 18px; /* Уменьшаем размер текста */
-        padding: 4px 8px;
-    }
-    .balances {
-        gap: 20px;
+    .balances-sidebar .balance-item,
+    .balances-sidebar .turnover-item {
+        font-size: 12px; /* Уменьшаем шрифт на маленьких экранах */
     }
 }
 
 @media screen and (max-width: 480px) {
-    .balances div {
-        font-size: 14px;
-        padding: 3px 6px;
-        max-width: 100px; /* Подгоняем под низкие разрешения */
-        min-width: 60px;
-    }
-    .balances {
-        gap: 10px; /* Уменьшаем расстояние между элементами */
+    .balances-sidebar .balance-item,
+    .balances-sidebar .turnover-item {
+        font-size: 10px; /* Уменьшаем шрифт еще больше для мобильных устройств */
     }
 }
-
-
 /* Кнопка "Выход" */
-.top-bar-button {
+.exit-button {
     background-color: #dc3545; /* Красный цвет */
     color: white;
     border: none;
@@ -146,19 +160,24 @@ body, html {
     border-radius: 4px;
     font-size: 14px;
     cursor: pointer;
+    width: 100%; /* Ширина кнопки на всю ширину боковой панели */
+    margin-top: 10px; /* Отступ сверху для отделения от баланса */
+    transition: background-color 0.3s, transform 0.2s; /* Плавный переход */
 }
 
-.top-bar-button:hover {
+.exit-button:hover {
     background-color: #a71d2a;
+    animation: bounce 0.3s; /* Анимация при наведении на кнопку "Выход" */
 }
+
+
 
 /* Основное содержимое (Main Content) */
-.main-content {
+body.dark-theme .main-content {
     margin-left: 180px; /* Отступ влево от sidebar */
-    margin-top: 60px; /* Отступ вниз от верхнего меню */
     padding: 20px;
     background-color: #0a0a0a;
-    height: calc(100vh - 60px); /* Высота контента за вычетом верхнего меню */
+    height: 100%; /* Высота контента за вычетом верхнего меню */
     overflow-y: auto;
 }
 
@@ -166,10 +185,100 @@ body, html {
     margin-top: 20px;
 }
 
-.news-item {
+body.dark-theme .news-item {
     background-color: #1d1d1d;
     padding: 20px;
     margin-bottom: 20px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     color: rgb(255, 255, 255);
+}
+
+
+/* Светлая тема */
+
+
+/* Левая боковая панель (Sidebar) */
+body.light-theme .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 180px; /* Уменьшили ширину */
+    height: 100%;
+    color: #000000;
+    overflow-y: auto;
+    background-color: #d4d4d4;
+    border-right: 2px solid #333; /* Уменьшили яркость границы */
+    z-index: 1000; /* Повыше основного контента */
+    display: flex; /* Добавлено для flexbox */
+    flex-direction: column; /* Вертикальное расположение элементов */
+}
+
+body.light-theme .sidebar-menu a, .sidebar-footer a {
+    color: #000000;
+    text-decoration: none;
+    cursor: pointer;
+    display: block;
+    padding: 10px 15px; /* Внутренние отступы */
+    font-size: 20px; /* Уменьшили размер шрифта */
+    transition: background-color 0.3s, box-shadow 0.3s, transform 0.2s; /* Плавный переход */
+    border-radius: 4px; /* Скругленные углы */
+}
+
+/* Эффекты при наведении и анимация кнопок */
+body.light-theme .sidebar-menu a:hover, .sidebar-footer a:hover {
+    background-color: rgba(124, 122, 122, 0.623); /* Светлый фон при наведении */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Тень при наведении */
+    animation: bounce 0.3s; /* Анимация при наведении */
+}
+
+body.light-theme .sidebar-menu li.active {
+    background-color: #000000;
+}
+
+body.light-theme .balances-sidebar {
+    color: #181818;
+    padding: 10px 15px; /* Отступы внутри блока */
+    background-color: #b8b8b8; /* Цвет фона блока */
+    border-top: 1px solid #333; /* Отделение от других элементов */
+    border-radius: 4px; /* Скругленные углы */
+    margin-top: auto; /* Автоматический отступ сверху заставляет элемент двигаться вниз */
+}
+
+body.light-theme .balance-item-container {
+    border: 1px solid #ccc; /* Цвет рамки */
+    border-radius: 4px; /* Скругление углов */
+    padding: 10px; /* Внутренние отступы */
+    margin-bottom: 10px; /* Отступ между элементами */
+    background-color: #d4d4d4; /* Цвет фона блока */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Тень для блока */
+}
+
+body.light-theme .main-content {
+    margin-left: 180px; /* Отступ влево от sidebar */
+    padding: 20px;
+    background-color: #d4d4d4;
+    height: 100%; /* Высота контента за вычетом верхнего меню */
+    overflow-y: auto;
+}
+
+body.light-theme .news-item {
+    background-color: #adadad;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    color: rgb(0, 0, 0);
+}
+
+.theme-button {
+    left: 50%;
+    padding: 6px 10px;
+    background-color: #f44336;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.theme-button:hover {
+    background-color: #d32f2f;
 }

@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from authapp.models import User, Bid  # Импортируем модели из authapp
+from authapp.models import User, Bid, DepWallet  # Импортируем модели из authapp
 from django.contrib import messages
 from django.utils.timezone import now
 from functools import wraps
@@ -46,10 +46,11 @@ def databaseadm(request):
     # Получаем данные из нужных таблиц
     users = User.objects.all()
     bids = Bid.objects.all()
-
+    wallets = DepWallet.objects.all()
     return render(request, 'adminapp/databaseadm.html', {
         'users': users,
         'bids': bids,
+        'wallets': wallets,
         'user': request.user  # Передаем текущего авторизованного пользователя
     })
 @admin_required
@@ -110,13 +111,14 @@ def add_bid(request):
         amount_rub = request.POST.get('amount_rub')
         exchange_rate = request.POST.get('exchange_rate')
         account_details = request.POST.get('account_details')
-        extra_fee = request.POST.get('extra_fee') is not None
-
+        extra_fee = request.POST.get('extra_fee') == 'on'  # Проверяем флажок
+        extra_fee_usdt = request.POST.get('extra_fee_amount')  # Извлекаем значение надбавки
         # Проверяем, выбран ли пользователь
         user = None
         if user_id:
             user = get_object_or_404(User, id=user_id)
-
+        if extra_fee and not extra_fee_usdt:
+            extra_fee_usdt = 0  # Вы можете использовать None, если это соответствует вашей логике
         # Устанавливаем статус в зависимости от пользователя
         if user:
             status = 'pending'  # Если пользователь указан
@@ -132,7 +134,30 @@ def add_bid(request):
             account_details=account_details,
             extra_fee=extra_fee,
             status=status,  # Устанавливаем статус
+            extra_fee_usdt=extra_fee_usdt or 0,
         )
 
         # Редиректим на нужную страницу
         return redirect('databaseadm')  # Укажите URL редиректа
+
+@admin_required
+def add_wallet(request):
+    if request.method == 'POST':
+        wallet_address = request.POST.get('wallet_address')  # Получаем адрес кошелька
+
+        # Проверяем, что wallet_address не None
+        if wallet_address is None:
+            messages.error(request, 'Адрес кошелька не должен быть пустым.')
+            return redirect('databaseadm')
+
+        wallet_address = wallet_address.strip()  # Убираем пробелы
+        is_enabled = request.POST.get('is_enabled') == 'on'  # Проверяем, включен ли кошелек
+
+        # Создаем новый кошелек
+        DepWallet.objects.create(
+            wallet_address=wallet_address,
+            is_enabled=is_enabled,
+            # Добавьте остальные поля, если они существуют
+        )
+        messages.success(request, 'Кошелек успешно добавлен.')
+        return redirect('databaseadm')  # Возвращаемся к странице управления кошельками

@@ -23,29 +23,27 @@
       <li><a href="{% url 'referrals' %}">Рефералы</a></li>
       <li><a href="{% url 'statistics' %}">Статистика</a></li>
       <li><a href="{% url 'api' %}">API</a></li>
-    </ul>
-    <ul class="sidebar-footer">
       <li><a href="{% url 'settings' %}">Настройки</a></li>
       <li><a href="{% url 'faq' %}">FAQ</a></li>
     </ul>
-  </div>
 
-<!-- Top bar -->
-<div class="top-bar">
-  <div class="exchange-rates">
-    BB p2p: {{ exchange_rate.p2p_rate|default:'--'|floatformat:2 }} RUB /
-    Sale: {{ exchange_rate.sale_rate|default:'--'|floatformat:2 }} RUB
+    <!-- Балансы и дополнительные элементы (перемещено вниз) -->
+    <div class="balances-sidebar">
+      <div class="balance-item">Баланс: {{ user_balance|floatformat:2 }} ₽</div>
+      <div class="turnover-item">Оборот: {{ user_turnover|floatformat:2 }} ₽</div>
+      <div class="deals">Сделок: {{ user_deals_count }}</div>
+      <div class="exchange-rates">
+        BB p2p: {{ exchange_rate.p2p_rate|default:'--'|floatformat:2 }} RUB /
+        Sale: {{ exchange_rate.sale_rate|default:'--'|floatformat:2 }} RUB
+      </div>
+      <button id="theme-toggle" class="top-bar-button theme-button">Сменить тему</button>
+      <button onclick="location.href='{% url 'logout' %}'" class="top-bar-button exit-button">Выход</button>
+    </div>
+    
+    <ul class="sidebar-footer">
+      <!-- Этот блок можно оставить пустым, так как все ссылки перемещены выше -->
+    </ul>
   </div>
-
-  <div class="balances">
-    <div class="balance-switcher">Баланс: {{ user_balance|floatformat:2 }} ₽</div>
-    <div class="escrow-switcher">Эскроу: {{ user_escrow|floatformat:2 }} ₽</div>
-    <div class="deals">Сделок: {{ user_deals_count }}</div>
-    <div class="turnover-switcher">Оборот: {{ user_turnover|floatformat:2 }} ₽</div>
-  </div>
-  <a href="{% url 'logout' %}" class="top-bar-button exit-button">Выход</a>
-</div>
-
 
   <!-- Main content -->
   <div class="main-content">
@@ -55,6 +53,25 @@
   </div>
   
   <script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const toggleButton = document.getElementById('theme-toggle');
+    
+    // Проверяем сохраненную тему в локальном хранилище
+    const currentTheme = localStorage.getItem('theme') === 'dark-theme' ? 'dark-theme' : 'light-theme';
+    document.body.classList.add(currentTheme);
+
+    toggleButton.addEventListener('click', () => {
+        if (document.body.classList.contains('dark-theme')) {
+            document.body.classList.remove('dark-theme');
+            document.body.classList.add('light-theme');
+            localStorage.setItem('theme', 'light-theme');
+        } else {
+            document.body.classList.remove('light-theme');
+            document.body.classList.add('dark-theme');
+            localStorage.setItem('theme', 'dark-theme');
+        }
+    });
+  });
     function updateExchangeRates() {
         fetch("{% url 'fetch_exchange_rate' %}")
             .then(response => response.json())

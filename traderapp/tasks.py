@@ -2,6 +2,9 @@ from celery import shared_task
 from authapp.models import ExchangeRate
 from traderapp.utils import get_bybit_p2p_rate
 from django.utils.timezone import now
+from authapp.models import DepositRequest
+from django.utils import timezone
+from datetime import timedelta
 
 @shared_task
 def update_exchange_rate():
@@ -13,3 +16,11 @@ def update_exchange_rate():
         exchange_rate.last_update = now()
         exchange_rate.save()
     return f"Курс обновлен: {p2p_rate}"
+
+@shared_task
+def expire_deposit_requests():
+    """
+    Задача для автоматического изменения статуса просроченных заявок на 'expired'.
+    """
+    now = timezone.now()
+    DepositRequest.objects.filter(status='active', expiration_date__lt=now).update(status='expired')
