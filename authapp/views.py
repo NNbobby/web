@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import User, UserSession, Bid
+from .models import User, UserSession
+from trades.models import Bid
 from django.utils.timezone import now
 from django.contrib import messages  # Для системы сообщений
 from uuid import UUID

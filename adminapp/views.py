@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from authapp.models import User, Bid, DepWallet  # Импортируем модели из authapp
+from authapp.models import User  # Импортируем модели из authapp
+from trades.models import Bid, DepWallet
 from django.contrib import messages
 from django.utils.timezone import now
 from functools import wraps

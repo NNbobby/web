@@ -2,15 +2,14 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.timezone import now, timedelta
 from functools import wraps
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseRedirect
-from authapp.models import User, UserSession, Bid, ExchangeRate, DepositRequest, DepWallet
+from authapp.models import User, UserSession
+from trades.models import Bid, ExchangeRate, DepositRequest, DepWallet, Wallet
 from django.contrib import messages  # Для системы сообщений
 from uuid import UUID
 from authapp.utils import get_client_ip  # Лучшая практика: перенос функции "получение IP" в отдельный файл utils.py (опционально)
 import json
 from django.http import JsonResponse
-from authapp.models import ExchangeRate
 from traderapp.utils import get_bybit_p2p_rate
-from authapp.models import Wallet
 from django.utils import timezone
 
 

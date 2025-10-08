@@ -37,7 +37,11 @@ INSTALLED_APPS = [
     'clientapp',
     'adminapp',
     'paymentapp',
-    'authapp.utils'
+    'authapp.utils',
+    "ledger",
+    "trades",
+    "appeals",
+    "notifications",
 ]
 
 MIDDLEWARE = [
