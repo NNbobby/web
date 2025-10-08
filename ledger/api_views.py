@@ -4,8 +4,11 @@ from rest_framework import status
 from decimal import Decimal
 from ledger.services import LedgerService
 from authapp.models import User
+from authapp.permissions import IsVerified
+from rest_framework.permissions import IsAuthenticated
 
 class TransferView(APIView):
+    permission_classes = [IsAuthenticated, IsVerified]
     """POST /api/ledger/transfer/"""
 
     def post(self, request):
