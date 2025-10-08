@@ -9,4 +9,5 @@ urlpatterns = [
     path('payments/', include('paymentapp.urls')), #
     path('admin-panel/', include('adminapp.urls')), 
     path('private-lk/', include('clientapp.urls')), 
+    path("api/ledger/", include("ledger.urls")),
 ]
