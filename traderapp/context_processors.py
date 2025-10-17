@@ -1,4 +1,4 @@
-from authapp.models import User  # Импорт твоей модели
+from trades.models import User # Импорт твоей модели
 
 def user_data(request):
     if 'user_id' in request.session:  # Проверяем, есть ли в сессии ID пользователя
@@ -14,7 +14,7 @@ def user_data(request):
             return {}  # Если пользователя не нашли, возвращаем пустой контекст
     return {}
 
-from authapp.models import ExchangeRate
+from trades.models import ExchangeRate
 
 def exchange_rate_context(request):
     try:
